@@ -3,11 +3,12 @@ import { supabase } from "./lib/supabase";
 import {
   Search, SlidersHorizontal, Star, Clock, MapPin, JapaneseYen,
   X, Check, Flame, ThermometerSun, Bath, Sparkles,
-  XCircle, Waves, Menu, Map, LayoutGrid, Heart, LogIn, LogOut, User, Mail, Loader2, Plus, Share2,
+  XCircle, Waves, Menu, Map, LayoutGrid, Heart, LogIn, LogOut, User, Mail, Loader2, Plus, Share2, Shield,
 } from "lucide-react";
 var MapView = lazy(function() { return import("./MapView.jsx"); });
 var SubmitFacility = lazy(function() { return import("./SubmitFacility.jsx"); });
 var Reviews = lazy(function() { return import("./Reviews.jsx"); });
+var AdminPanel = lazy(function() { return import("./AdminPanel.jsx"); });
 
 var REGIONS = [
   { id: "all", name: "全国" },{ id: "hokkaido", name: "北海道" },{ id: "tohoku", name: "東北" },
@@ -245,6 +246,8 @@ export default function App() {
   var [favorites, setFavorites] = useState([]);
   var [showFavsOnly, setShowFavsOnly] = useState(false);
   var [showSubmit, setShowSubmit] = useState(false);
+  var [isAdmin, setIsAdmin] = useState(false);
+  var [showAdmin, setShowAdmin] = useState(false);
   var resultsRef = useRef(null);
 
   useEffect(function() {
@@ -264,7 +267,13 @@ export default function App() {
   }, []);
 
   useEffect(function() { fetchFacilities(); }, []);
-  useEffect(function() { if (user) fetchFavorites(); else { setFavorites([]); setShowFavsOnly(false); } }, [user]);
+  useEffect(function() {
+    if (user) {
+      fetchFavorites();
+      supabase.from("profiles").select("is_admin").eq("id", user.id).single()
+        .then(function(res) { if (!res.error && res.data) setIsAdmin(res.data.is_admin === true); });
+    } else { setFavorites([]); setShowFavsOnly(false); setIsAdmin(false); setShowAdmin(false); }
+  }, [user]);
 
   function fetchFacilities() {
     setLoading(true);
@@ -361,6 +370,13 @@ export default function App() {
                   <User size={14} color="#C4B99A" strokeWidth={1.8} />
                   {!isMobile && <span style={{ fontSize: 11, color: "#C4B99A", fontWeight: 500 }}>ログアウト</span>}
                 </button>
+                {isAdmin && (
+                  <button onClick={function() { setShowAdmin(true); }}
+                    style={{ background: "transparent", border: "1px solid rgba(196,165,90,0.3)", borderRadius: 8, padding: "6px 10px", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+                    <Shield size={14} color="#C4A55A" strokeWidth={1.8} />
+                    {!isMobile && <span style={{ fontSize: 11, color: "#C4A55A", fontWeight: 600 }}>管理</span>}
+                  </button>
+                )}
               </div>
             ) : (
               <button onClick={function() { setShowLogin(true); }}
@@ -538,6 +554,7 @@ export default function App() {
       <Modal facility={modal} onClose={function() { setModal(null); }} isMobile={isMobile} isFav={modal ? favorites.indexOf(modal.id) !== -1 : false} onToggleFav={toggleFavorite} user={user} onReviewChange={fetchFacilities} />
       {showLogin && <LoginModal onClose={function() { setShowLogin(false); }} isMobile={isMobile} />}
       {showSubmit && <Suspense fallback={null}><SubmitFacility onClose={function() { setShowSubmit(false); }} isMobile={isMobile} userId={user ? user.id : null} /></Suspense>}
+      {showAdmin && <Suspense fallback={null}><AdminPanel onClose={function() { setShowAdmin(false); fetchFacilities(); }} isMobile={isMobile} /></Suspense>}
     </div>
   );
 }
