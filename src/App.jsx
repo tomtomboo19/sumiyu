@@ -233,8 +233,8 @@ function LoginModal({ onClose, isMobile }) {
   var inputStyle = { width: "100%", border: "1px solid #EDE8DF", borderRadius: 8, padding: "10px 12px", fontSize: 14, color: "#2C2416", outline: "none", background: "#F8F4ED", fontFamily: "'Noto Sans JP', sans-serif" };
 
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,15,5,0.55)", backdropFilter: "blur(6px)", zIndex: 1100, display: "flex", alignItems: isMobile ? "flex-end" : "center", justifyContent: "center", padding: isMobile ? 0 : 20, animation: "fadeIn 0.25s" }}>
-      <div onClick={function(e) { e.stopPropagation(); }} style={{ background: "#FEFCF9", maxWidth: 400, width: "100%", borderRadius: isMobile ? "18px 18px 0 0" : 18, padding: "28px 24px", boxShadow: "0 24px 60px rgba(20,15,5,0.25)" }}>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,15,5,0.55)", backdropFilter: "blur(6px)", zIndex: 1100, display: "flex", alignItems: "center", justifyContent: "center", padding: isMobile ? 16 : 20, animation: "fadeIn 0.25s" }}>
+      <div onClick={function(e) { e.stopPropagation(); }} style={{ background: "#FEFCF9", maxWidth: 400, width: "100%", borderRadius: 18, padding: "28px 24px", boxShadow: "0 24px 60px rgba(20,15,5,0.25)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
           <h3 style={{ fontFamily: "'Shippori Mincho', serif", fontSize: 20, fontWeight: 700, color: "#2C2416", margin: 0 }}>
             {mode === "signup" ? "新規登録" : "ログイン"}
