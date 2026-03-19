@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "./lib/supabase";
 import {
   X, Check, XCircle, Trash2, Eye, EyeOff, ChevronLeft,
-  FileText, MessageCircle, Building2, Star, Loader2, Bell,
+  FileText, MessageCircle, Building2, Star, Loader2, Bell, ImagePlus,
 } from "lucide-react";
 
 var TABS = [
@@ -168,6 +168,19 @@ function FacilitiesTab() {
       .then(function(res) { if (!res.error) fetch(); });
   }
 
+  function handleImageUpload(facilityId, file) {
+    if (!file) return;
+    var ext = file.name.split(".").pop();
+    var path = facilityId + "/main." + ext;
+    supabase.storage.from("facility-images").upload(path, file, { upsert: true })
+      .then(function(res) {
+        if (res.error) { alert("アップロード失敗: " + res.error.message); return; }
+        var url = supabase.storage.from("facility-images").getPublicUrl(path).data.publicUrl;
+        supabase.from("facilities").update({ image_url: url }).eq("id", facilityId)
+          .then(function() { fetch(); });
+      });
+  }
+
   if (loading) return <div style={{ textAlign: "center", padding: 40 }}><Loader2 size={24} color="#C4A55A" style={{ animation: "spin 1s linear infinite" }} /></div>;
 
   return (
@@ -175,7 +188,16 @@ function FacilitiesTab() {
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {items.map(function(f) {
           return (
-            <div key={f.id} style={{ background: "#FEFCF9", borderRadius: 10, padding: 14, border: "1px solid #EDE8DF", display: "flex", alignItems: "center", justifyContent: "space-between", opacity: f.is_published ? 1 : 0.6 }}>
+            <div key={f.id} style={{ background: "#FEFCF9", borderRadius: 10, padding: 14, border: "1px solid #EDE8DF", display: "flex", alignItems: "center", gap: 12, opacity: f.is_published ? 1 : 0.6 }}>
+              <div style={{ width: 56, height: 56, borderRadius: 8, overflow: "hidden", flexShrink: 0, background: "#F5F0E8", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+                {f.image_url ? (
+                  <img src={f.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  <ImagePlus size={20} color="#9B917E" strokeWidth={1.5} />
+                )}
+                <input type="file" accept="image/*" onChange={function(e) { handleImageUpload(f.id, e.target.files[0]); e.target.value = ""; }}
+                  style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer" }} title="画像をアップロード" />
+              </div>
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 13, fontWeight: 700, color: "#2C2416" }}>{f.name}</span>

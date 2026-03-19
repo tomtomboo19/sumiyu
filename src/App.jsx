@@ -27,8 +27,15 @@ var TYPE_CONFIG = {
   spa:   { label: "スパ", color: "#76145A", bg: "#E8D3E0", icon: Sparkles, gradient: ["#CF7AAF","#AF5A8F"] },
 };
 
-function FacilityImage({ type }) {
+function FacilityImage({ type, imageUrl }) {
   var cfg = TYPE_CONFIG[type] || TYPE_CONFIG.onsen; var Icon = cfg.icon;
+  if (imageUrl) {
+    return (
+      <div style={{ width: "100%", height: "100%", position: "relative", overflow: "hidden", background: "linear-gradient(135deg, "+cfg.gradient[0]+", "+cfg.gradient[1]+")" }}>
+        <img src={imageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" onError={function(e) { e.target.style.display = "none"; }} />
+      </div>
+    );
+  }
   return (
     <div style={{ background: "linear-gradient(135deg, "+cfg.gradient[0]+", "+cfg.gradient[1]+")", width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
       <div style={{ position: "absolute", inset: 0, background: "repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.06) 20px, rgba(255,255,255,0.06) 40px)" }} />
@@ -72,7 +79,7 @@ function FacilityCard({ facility, onClick, isMobile, isFav, onToggleFav, user })
       <button onClick={handleHeart} style={{ position: "absolute", top: 10, right: 10, zIndex: 2, width: 34, height: 34, borderRadius: "50%", background: "rgba(255,255,255,0.9)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 6px rgba(0,0,0,0.1)", transition: "transform 0.2s", transform: hovered ? "scale(1.1)" : "scale(1)" }}>
         <Heart size={16} fill={isFav ? "#E85D3A" : "none"} color={isFav ? "#E85D3A" : "#9B917E"} strokeWidth={2} />
       </button>
-      <div style={{ height: isMobile ? 140 : 170, overflow: "hidden" }}><FacilityImage type={facility.type} /></div>
+      <div style={{ height: isMobile ? 140 : 170, overflow: "hidden" }}><FacilityImage type={facility.type} imageUrl={facility.image_url} /></div>
       <div style={{ padding: isMobile ? "12px 14px 14px" : "14px 16px 16px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
           <TypeBadge type={facility.type} />
@@ -109,7 +116,7 @@ function Modal({ facility, onClose, isMobile, isFav, onToggleFav, user, onReview
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,15,5,0.55)", backdropFilter: "blur(6px)", zIndex: 1000, display: "flex", alignItems: isMobile ? "flex-end" : "center", justifyContent: "center", padding: isMobile ? 0 : 20, animation: "fadeIn 0.25s ease" }}>
       <div onClick={function(e) { e.stopPropagation(); }} style={{ background: "#FEFCF9", maxWidth: 560, width: "100%", maxHeight: isMobile ? "92vh" : "85vh", overflow: "auto", borderRadius: isMobile ? "18px 18px 0 0" : 18, boxShadow: "0 24px 60px rgba(20,15,5,0.25)" }}>
         <div style={{ height: isMobile ? 180 : 200, position: "relative" }}>
-          <FacilityImage type={facility.type} />
+          <FacilityImage type={facility.type} imageUrl={facility.image_url} />
           <button onClick={onClose} style={{ position: "absolute", top: 12, right: 12, width: 34, height: 34, borderRadius: "50%", background: "rgba(255,255,255,0.9)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.12)" }}><X size={16} color="#2C2416" /></button>
           <button onClick={function(e) { e.stopPropagation(); onToggleFav(facility.id); }} style={{ position: "absolute", top: 12, right: 54, width: 34, height: 34, borderRadius: "50%", background: "rgba(255,255,255,0.9)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.12)" }}>
             <Heart size={16} fill={isFav ? "#E85D3A" : "none"} color={isFav ? "#E85D3A" : "#9B917E"} strokeWidth={2} />
