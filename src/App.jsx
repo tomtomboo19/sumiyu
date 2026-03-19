@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 var MapView = lazy(function() { return import("./MapView.jsx"); });
 var SubmitFacility = lazy(function() { return import("./SubmitFacility.jsx"); });
+var Reviews = lazy(function() { return import("./Reviews.jsx"); });
 
 var REGIONS = [
   { id: "all", name: "全国" },{ id: "hokkaido", name: "北海道" },{ id: "tohoku", name: "東北" },
@@ -95,7 +96,7 @@ function FacilityCard({ facility, onClick, isMobile, isFav, onToggleFav, user })
   );
 }
 
-function Modal({ facility, onClose, isMobile, isFav, onToggleFav }) {
+function Modal({ facility, onClose, isMobile, isFav, onToggleFav, user, onReviewChange }) {
   if (!facility) return null;
   var tags = (facility.facility_tags || []).map(function(ft) { return ft.tags ? ft.tags.name : null; }).filter(Boolean);
   var infoRows = [
@@ -144,6 +145,9 @@ function Modal({ facility, onClose, isMobile, isFav, onToggleFav }) {
               <p style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 10, color: "rgba(255,255,255,0.75)", margin: "2px 0 0" }}>タトゥーのある方もご入場いただけます</p>
             </div>
           </div>
+          <Suspense fallback={null}>
+            <Reviews facilityId={facility.id} user={user} onReviewChange={onReviewChange} />
+          </Suspense>
         </div>
       </div>
     </div>
@@ -512,7 +516,7 @@ export default function App() {
         <Plus size={24} color="#2C2416" strokeWidth={2.5} />
       </button>
 
-      <Modal facility={modal} onClose={function() { setModal(null); }} isMobile={isMobile} isFav={modal ? favorites.indexOf(modal.id) !== -1 : false} onToggleFav={toggleFavorite} />
+      <Modal facility={modal} onClose={function() { setModal(null); }} isMobile={isMobile} isFav={modal ? favorites.indexOf(modal.id) !== -1 : false} onToggleFav={toggleFavorite} user={user} onReviewChange={fetchFacilities} />
       {showLogin && <LoginModal onClose={function() { setShowLogin(false); }} isMobile={isMobile} />}
       {showSubmit && <Suspense fallback={null}><SubmitFacility onClose={function() { setShowSubmit(false); }} isMobile={isMobile} userId={user ? user.id : null} /></Suspense>}
     </div>
