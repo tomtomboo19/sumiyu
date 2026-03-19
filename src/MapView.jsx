@@ -1,8 +1,7 @@
-import { useEffect, useRef } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { useState, useEffect } from "react";
+import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { Star, Clock, MapPin } from "lucide-react";
 
 var TYPE_COLORS = {
   onsen: "#B8845C",
@@ -35,25 +34,83 @@ function createIcon(type) {
   });
 }
 
-function FitBounds({ facilities }) {
+function calcDistance(lat1, lon1, lat2, lon2) {
+  var R = 6371;
+  var dLat = (lat2 - lat1) * Math.PI / 180;
+  var dLon = (lon2 - lon1) * Math.PI / 180;
+  var a = Math.sin(dLat/2) * Math.sin(dLat/2)
+    + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180)
+    * Math.sin(dLon/2) * Math.sin(dLon/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function formatDist(km) {
+  if (km < 1) return Math.round(km * 1000) + "m";
+  if (km < 10) return km.toFixed(1) + "km";
+  return Math.round(km) + "km";
+}
+
+function LocationHandler({ userPos, setUserPos, facilities }) {
   var map = useMap();
+
   useEffect(function() {
-    if (facilities.length === 0) return;
-    var bounds = facilities
-      .filter(function(f) { return f.latitude && f.longitude; })
-      .map(function(f) { return [f.latitude, f.longitude]; });
-    if (bounds.length > 0) {
-      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 12 });
-    }
-  }, [facilities, map]);
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      function(pos) {
+        var latlng = [pos.coords.latitude, pos.coords.longitude];
+        setUserPos(latlng);
+        map.setView(latlng, 11);
+      },
+      function() {
+        if (facilities.length > 0) {
+          var bounds = facilities
+            .filter(function(f) { return f.latitude && f.longitude; })
+            .map(function(f) { return [f.latitude, f.longitude]; });
+          if (bounds.length > 0) map.fitBounds(bounds, { padding: [40, 40], maxZoom: 12 });
+        }
+      },
+      { enableHighAccuracy: false, timeout: 8000 }
+    );
+  }, []);
+
   return null;
 }
 
+function LocateButton({ setUserPos }) {
+  var map = useMap();
+  function handleClick() {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(function(pos) {
+      var latlng = [pos.coords.latitude, pos.coords.longitude];
+      setUserPos(latlng);
+      map.setView(latlng, 12, { animate: true });
+    });
+  }
+  return (
+    <button onClick={handleClick} style={{
+      position: "absolute", bottom: 20, right: 12, zIndex: 1000,
+      width: 40, height: 40, borderRadius: 10,
+      background: "#FEFCF9", border: "1px solid #EDE8DF",
+      boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+      cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+    }}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2C5F4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="4" /><path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+      </svg>
+    </button>
+  );
+}
+
 export default function MapView({ facilities, onSelect, isMobile }) {
+  var [userPos, setUserPos] = useState(null);
   var validFacilities = facilities.filter(function(f) { return f.latitude && f.longitude; });
 
   return (
-    <div style={{ borderRadius: 14, overflow: "hidden", border: "1px solid rgba(180,160,120,0.15)", boxShadow: "0 1px 8px rgba(60,40,10,0.06)" }}>
+    <div style={{ borderRadius: 14, overflow: "hidden", border: "1px solid rgba(180,160,120,0.15)", boxShadow: "0 1px 8px rgba(60,40,10,0.06)", position: "relative" }}>
+      <style>{"\
+        @keyframes locPulse { 0% { transform: scale(1); opacity: 0.7; } 100% { transform: scale(3); opacity: 0; } }\
+        .loc-pulse { animation: locPulse 1.5s ease-out infinite; }\
+      "}</style>
       <MapContainer
         center={[36.5, 137.5]}
         zoom={5}
@@ -64,9 +121,20 @@ export default function MapView({ facilities, onSelect, isMobile }) {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <FitBounds facilities={validFacilities} />
+        <LocationHandler userPos={userPos} setUserPos={setUserPos} facilities={validFacilities} />
+        <LocateButton setUserPos={setUserPos} />
+
+        {userPos && (
+          <>
+            <CircleMarker center={userPos} radius={8} pathOptions={{ color: "#2C5F4A", fillColor: "#3D7B62", fillOpacity: 1, weight: 3 }} />
+            <CircleMarker center={userPos} radius={8} pathOptions={{ color: "#3D7B62", fillColor: "#3D7B62", fillOpacity: 0.3, weight: 0, className: "loc-pulse" }} />
+            <CircleMarker center={userPos} radius={40} pathOptions={{ color: "#3D7B62", fillColor: "#3D7B62", fillOpacity: 0.08, weight: 1, dashArray: "4 4" }} />
+          </>
+        )}
+
         {validFacilities.map(function(f) {
           var tags = (f.facility_tags || []).map(function(ft) { return ft.tags ? ft.tags.name : null; }).filter(Boolean);
+          var dist = userPos ? calcDistance(userPos[0], userPos[1], f.latitude, f.longitude) : null;
           return (
             <Marker key={f.id} position={[f.latitude, f.longitude]} icon={createIcon(f.type)}>
               <Popup maxWidth={280} minWidth={220}>
@@ -78,6 +146,11 @@ export default function MapView({ facilities, onSelect, isMobile }) {
                       padding: "2px 8px", borderRadius: 3, letterSpacing: 0.5,
                     }}>{TYPE_LABELS[f.type] || "施設"}</span>
                     <span style={{ fontSize: 10, color: "#9B917E" }}>{f.prefecture} {f.city}</span>
+                    {dist !== null && (
+                      <span style={{ fontSize: 10, fontWeight: 700, color: "#2C5F4A", marginLeft: "auto" }}>
+                        {formatDist(dist)}
+                      </span>
+                    )}
                   </div>
                   <h3 style={{
                     fontFamily: "'Shippori Mincho', serif", fontSize: 15, fontWeight: 700,
