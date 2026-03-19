@@ -3,9 +3,10 @@ import { supabase } from "./lib/supabase";
 import {
   Search, SlidersHorizontal, Star, Clock, MapPin, JapaneseYen,
   X, Check, Flame, ThermometerSun, Bath, Sparkles,
-  XCircle, Waves, Menu, Map, LayoutGrid, Heart, LogIn, LogOut, User, Mail, Loader2,
+  XCircle, Waves, Menu, Map, LayoutGrid, Heart, LogIn, LogOut, User, Mail, Loader2, Plus,
 } from "lucide-react";
 var MapView = lazy(function() { return import("./MapView.jsx"); });
+var SubmitFacility = lazy(function() { return import("./SubmitFacility.jsx"); });
 
 var REGIONS = [
   { id: "all", name: "全国" },{ id: "hokkaido", name: "北海道" },{ id: "tohoku", name: "東北" },
@@ -220,6 +221,7 @@ export default function App() {
   var [showLogin, setShowLogin] = useState(false);
   var [favorites, setFavorites] = useState([]);
   var [showFavsOnly, setShowFavsOnly] = useState(false);
+  var [showSubmit, setShowSubmit] = useState(false);
   var resultsRef = useRef(null);
 
   useEffect(function() {
@@ -500,8 +502,19 @@ export default function App() {
         </div>
       </footer>
 
+      {/* Floating submit button */}
+      <button onClick={function() { if (!user) { setShowLogin(true); } else { setShowSubmit(true); } }}
+        style={{ position: "fixed", bottom: isMobile ? 20 : 28, right: isMobile ? 16 : 28, zIndex: 90, width: isMobile ? 52 : 56, height: isMobile ? 52 : 56, borderRadius: 16, background: "linear-gradient(135deg, #C4A55A, #E8C96A)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 20px rgba(196,165,90,0.4)", transition: "transform 0.2s" }}
+        onMouseEnter={function(e) { e.currentTarget.style.transform = "scale(1.08)"; }}
+        onMouseLeave={function(e) { e.currentTarget.style.transform = "scale(1)"; }}
+        title="施設を登録申請"
+      >
+        <Plus size={24} color="#2C2416" strokeWidth={2.5} />
+      </button>
+
       <Modal facility={modal} onClose={function() { setModal(null); }} isMobile={isMobile} isFav={modal ? favorites.indexOf(modal.id) !== -1 : false} onToggleFav={toggleFavorite} />
       {showLogin && <LoginModal onClose={function() { setShowLogin(false); }} isMobile={isMobile} />}
+      {showSubmit && <Suspense fallback={null}><SubmitFacility onClose={function() { setShowSubmit(false); }} isMobile={isMobile} userId={user ? user.id : null} /></Suspense>}
     </div>
   );
 }
