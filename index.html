@@ -3,11 +3,64 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="全国のタトゥーOKな温泉・サウナ・銭湯・スパを検索できるポータルサイト" />
+    <meta name="description" content="全国のタトゥーOKな温泉・サウナ・銭湯・スパをかんたんに検索。タトゥーがあっても安心して入れる施設を見つけよう。" />
+    <meta name="keywords" content="タトゥー,温泉,サウナ,銭湯,スパ,刺青,入れ墨,tattoo,タトゥーOK,タトゥーフレンドリー" />
     <title>墨湯 SUMIYU｜タトゥーOK温泉・サウナ検索</title>
+
+    <!-- OGP -->
+    <meta property="og:title" content="墨湯 SUMIYU｜タトゥーOK温泉・サウナ検索" />
+    <meta property="og:description" content="全国のタトゥーOKな温泉・サウナ・銭湯・スパをかんたんに検索。あなたの「ととのい」を見つけよう。" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://tomtomboo19.github.io/sumiyu/" />
+    <meta property="og:image" content="https://tomtomboo19.github.io/sumiyu/ogp.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="墨湯 SUMIYU" />
+    <meta property="og:locale" content="ja_JP" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="墨湯 SUMIYU｜タトゥーOK温泉・サウナ検索" />
+    <meta name="twitter:description" content="全国のタトゥーOKな温泉・サウナ・銭湯・スパをかんたんに検索。" />
+    <meta name="twitter:image" content="https://tomtomboo19.github.io/sumiyu/ogp.png" />
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#C4A55A" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="墨湯" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon.png" />
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "墨湯 SUMIYU",
+      "alternateName": "SUMIYU",
+      "url": "https://tomtomboo19.github.io/sumiyu/",
+      "description": "全国のタトゥーOKな温泉・サウナ・銭湯・スパを検索できるポータルサイト",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://tomtomboo19.github.io/sumiyu/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function() {
+          navigator.serviceWorker.register("sw.js").catch(function() {});
+        });
+      }
+    </script>
   </body>
 </html>
