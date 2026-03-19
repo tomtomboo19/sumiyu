@@ -1,35 +1,16 @@
-# 墨湯 SUMIYU ♨️
+# React + Vite
 
-全国のタトゥーOKな温泉・サウナ・銭湯・スパを検索できるポータルサイト
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## ローカル開発
+Currently, two official plugins are available:
 
-```bash
-npm install
-npm run dev
-```
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## GitHub Pages へのデプロイ手順
+## React Compiler
 
-1. GitHub に新しいリポジトリを作成（名前は何でもOK）
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-2. ローカルで以下を実行：
-```bash
-git init
-git add .
-git commit -m "first commit"
-git branch -M main
-git remote add origin https://github.com/<ユーザー名>/<リポジトリ名>.git
-git push -u origin main
-```
+## Expanding the ESLint configuration
 
-3. GitHub リポジトリの **Settings → Pages → Source** を **「GitHub Actions」** に変更
-
-4. push 時に自動でビルド＆デプロイされます
-
-5. 公開URL: `https://<ユーザー名>.github.io/<リポジトリ名>/`
-
-## 技術スタック
-
-- React 19 + Vite 6
-- GitHub Actions (自動デプロイ)
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
