@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { supabase } from "./lib/supabase";
 import {
   Search, SlidersHorizontal, Star, Clock, MapPin, JapaneseYen,
   X, Check, Flame, ThermometerSun, Bath, Sparkles,
-  XCircle, Waves, Menu,
+  XCircle, Waves, Menu, Map, LayoutGrid,
 } from "lucide-react";
+var MapView = lazy(function() { return import("./MapView.jsx"); });
 
 const REGIONS = [
   { id: "all", name: "全国" },
@@ -204,6 +205,7 @@ export default function App() {
   var [sortBy, setSortBy] = useState("rating");
   var [modal, setModal] = useState(null);
   var [showFilters, setShowFilters] = useState(false);
+  var [viewMode, setViewMode] = useState("list");
   var [mobileMenu, setMobileMenu] = useState(false);
   var [isMobile, setIsMobile] = useState(false);
   var resultsRef = useRef(null);
@@ -368,6 +370,14 @@ export default function App() {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontSize: 12, color: "#9B917E" }}><strong style={{ color: "#2C2416" }}>{filtered.length}</strong> 件</span>
+            <div style={{ display: "flex", gap: 2, background: "#FEFCF9", borderRadius: 6, padding: 2, border: "1px solid #EDE8DF" }}>
+              <button onClick={function() { setViewMode("list"); }} style={{ background: viewMode === "list" ? "#2C2416" : "transparent", border: "none", borderRadius: 4, padding: "5px 8px", cursor: "pointer", display: "flex", alignItems: "center" }}>
+                <LayoutGrid size={14} color={viewMode === "list" ? "#F5EDD6" : "#9B917E"} strokeWidth={1.8} />
+              </button>
+              <button onClick={function() { setViewMode("map"); }} style={{ background: viewMode === "map" ? "#2C2416" : "transparent", border: "none", borderRadius: 4, padding: "5px 8px", cursor: "pointer", display: "flex", alignItems: "center" }}>
+                <Map size={14} color={viewMode === "map" ? "#F5EDD6" : "#9B917E"} strokeWidth={1.8} />
+              </button>
+            </div>
             <select value={sortBy} onChange={function(e) { setSortBy(e.target.value); }}
               style={{ background: "#FEFCF9", border: "1px solid #EDE8DF", borderRadius: 8, padding: "7px 10px", fontSize: 11, color: "#4A4235", cursor: "pointer", outline: "none" }}
             >
@@ -405,15 +415,21 @@ export default function App() {
             <p style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 13, color: "#9B917E", marginTop: 12 }}>施設を読み込み中...</p>
           </div>
         ) : filtered.length > 0 ? (
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(auto-fill, minmax(260px, 1fr))" : "repeat(auto-fill, minmax(300px, 1fr))", gap: isMobile ? 14 : 20 }}>
-            {filtered.map(function(f, i) {
-              return (
-                <div key={f.id} style={{ animation: "slideUp 0.4s ease " + (i * 0.04) + "s both" }}>
-                  <FacilityCard facility={f} onClick={setModal} isMobile={isMobile} />
-                </div>
-              );
-            })}
-          </div>
+          viewMode === "map" ? (
+            <Suspense fallback={<div style={{ textAlign: "center", padding: "60px 20px" }}><Waves size={36} color="#C4A55A" strokeWidth={1.2} style={{ animation: "pulse 1.5s infinite" }} /><p style={{ fontSize: 13, color: "#9B917E", marginTop: 12 }}>地図を読み込み中...</p></div>}>
+              <MapView facilities={filtered} onSelect={setModal} isMobile={isMobile} />
+            </Suspense>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(auto-fill, minmax(260px, 1fr))" : "repeat(auto-fill, minmax(300px, 1fr))", gap: isMobile ? 14 : 20 }}>
+              {filtered.map(function(f, i) {
+                return (
+                  <div key={f.id} style={{ animation: "slideUp 0.4s ease " + (i * 0.04) + "s both" }}>
+                    <FacilityCard facility={f} onClick={setModal} isMobile={isMobile} />
+                  </div>
+                );
+              })}
+            </div>
+          )
         ) : (
           <div style={{ textAlign: "center", padding: "60px 20px" }}>
             <Search size={40} color="#C4B99A" strokeWidth={1} />
